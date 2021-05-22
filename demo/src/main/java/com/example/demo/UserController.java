@@ -29,6 +29,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,12 +45,13 @@ public class UserController {
     private String authServerUrl = "http://localhost:8080/auth";
     private String realm = "realm-1";
     private String clientId = "client-1";
-    private String role = "Pleb level 1";
+    private String role1 = "pleb";
+    private String role2 = "pleb1";
     //Get client secret from the Keycloak admin console (in the credential tab)
     private String clientSecret = "ff0634c2-039e-4baf-960d-790df88d3cde";
 
-    @Autowired
-    private RestTemplate restTemplate;
+    // @Autowired
+    // private RestTemplate restTemplate;
 
     @PostMapping(path = "/create")
     public ResponseEntity<?> createUser(@RequestBody  UserDto userDTO) {
@@ -97,7 +99,7 @@ public class UserController {
             userResource.resetPassword(passwordCred);
 
             // Get realm role student
-            RoleRepresentation realmRoleUser = realmResource.roles().get(role).toRepresentation();
+            RoleRepresentation realmRoleUser = realmResource.roles().get(role1).toRepresentation();
 
             // Assign realm role student to user
             userResource.roles().realmLevel().add(Arrays.asList(realmRoleUser));
@@ -154,9 +156,15 @@ public class UserController {
         return "Hello, this api is not protected.";
     }
 
-
-    @GetMapping(value = "/protected-data")
+    @PreAuthorize("hasRole('ROLE_pleb')")
+    @GetMapping(value = "/for-Pleblv1")
     public String getEmail() {
-        return "Hello, this api is protected.";
+        return "Hello, this api is for pleb lv1.";
+    }
+
+    @PreAuthorize("hasRole('ROLE_pleb1')")
+    @GetMapping(value = "/for-Pleblv2")
+    public String getWelp() {
+        return "Hello, this api is for pleb lv2.";
     }
 }
