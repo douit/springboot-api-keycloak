@@ -60,7 +60,7 @@ public class UserController {
     private String role1 = "pleb";
     private String role2 = "pleb1";
     // Get client secret from the Keycloak admin console (in the credential tab)
-    private String clientSecret = "ff0634c2-039e-4baf-960d-790df88d3cde";
+    private String clientSecret = "ed3fe85a-bfb4-4d96-8cbc-9e1b8fda7916";
 
     @Autowired
     private RestTemplate restTemplate;

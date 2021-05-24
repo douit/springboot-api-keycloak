@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+    mysql:
+        restart: always
+        image: mysql:8.0.20
+        environment: 
+            MYSQL_ROOT_PASSWORD: 12345
+            MYSQL_USER: admin 
+            MYSQL_PASSWORD: 12345
+            MYSQL_DATABASE: keycloak
+        ports: 
+            - 3306:3306
+    keycloak:
+        image: quay.io/keycloak/keycloak:latest
+        environment: 
+            - KEYCLOAK_USER=admin
+            - KEYCLOAK_PASSWORD=12345
+            - DB_ADDR=mysql
+            - DB_VENDOR=MYSQL
+            - DB_USER=admin
+            - DB_PASSWORD=12345
+            - DB_DATABASE=keycloak
+            - JDBC_PARAMS=connectTimeout=30000
+        ports: 
+            - 8080:8080
+        depends_on: 
+            - mysql
+        volumes: 
+            - ./keycloak:/tmp
+    demo:
+        restart: on-failure
+        build: ./
+        expose:
+            - "8081"
+        ports:
+            - 8081:8081
+        environment: 
+            WAIT_HOSTS: mysql:3306
+            WAIT_HOSTS: jboss/keycloak:13.0.0:8080
+        depends_on: 
+            - mysql
+            - keycloak
