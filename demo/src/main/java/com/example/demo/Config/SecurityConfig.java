@@ -46,10 +46,10 @@ import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityConfig extends KeycloakAuthenticationProvider {
-  
+
   private final SimpleAuthorityMapper grantedAuthorityMapper;
 
-  public SecurityConfig(SimpleAuthorityMapper grantedAuthorityMapper){
+  public SecurityConfig(SimpleAuthorityMapper grantedAuthorityMapper) {
     this.grantedAuthorityMapper = grantedAuthorityMapper;
   }
 
@@ -58,29 +58,23 @@ public class SecurityConfig extends KeycloakAuthenticationProvider {
     KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) authentication;
     Set<GrantedAuthority> authorities = new HashSet<>();
     authorities.addAll(getKeycloakRealmRolesToAuthorities());
-    return new KeycloakAuthenticationToken(
-        token.getAccount(),
-        token.isInteractive(),
-        authorities);
+    return new KeycloakAuthenticationToken(token.getAccount(), token.isInteractive(), authorities);
   }
 
   private Collection<GrantedAuthority> getKeycloakRealmRolesToAuthorities() {
-    AccessToken accessToken =getLoggedInKeycloakUserAccessToken();
+    AccessToken accessToken = getLoggedInKeycloakUserAccessToken();
     Set<String> realmRoles = accessToken.getRealmAccess().getRoles();
     return toGrantedAuthorities(realmRoles);
   }
 
-
   private Collection<GrantedAuthority> toGrantedAuthorities(Set<String> roles) {
-    Collection<GrantedAuthority> authorities = AuthorityUtils
-        .createAuthorityList(roles.toArray(new String[0]));
+    Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(roles.toArray(new String[0]));
     return grantedAuthorityMapper.mapAuthorities(authorities);
   }
 
-
   public KeycloakPrincipal<KeycloakSecurityContext> getLoggedInKeycloakUser() {
-    return (KeycloakPrincipal<KeycloakSecurityContext>)
-        SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return (KeycloakPrincipal<KeycloakSecurityContext>) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
   }
 
   public KeycloakSecurityContext getLoggedInKeycloakUserSecurityContext() {
@@ -90,15 +84,5 @@ public class SecurityConfig extends KeycloakAuthenticationProvider {
   public AccessToken getLoggedInKeycloakUserAccessToken() {
     return getLoggedInKeycloakUserSecurityContext().getToken();
   }
-    
 
-    @Bean
-	public RestTemplate restTemplate() {
-        RestTemplate template = new RestTemplate();
-        ObjectMapper mapper = new ObjectMapper();
-        template.getMessageConverters().add(new ObjectToUrlEncodedConverter(mapper));
-
-		return template;
-	}
-    
 }

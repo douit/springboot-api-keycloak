@@ -1,12 +1,24 @@
 package com.example.demo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.CreatedResponseUtil;
@@ -47,22 +59,20 @@ public class UserController {
     private String clientId = "client-1";
     private String role1 = "pleb";
     private String role2 = "pleb1";
-    //Get client secret from the Keycloak admin console (in the credential tab)
+    // Get client secret from the Keycloak admin console (in the credential tab)
     private String clientSecret = "ff0634c2-039e-4baf-960d-790df88d3cde";
 
-    // @Autowired
-    // private RestTemplate restTemplate;
+    @Autowired
+    private RestTemplate restTemplate;
 
     @PostMapping(path = "/create")
-    public ResponseEntity<?> createUser(@RequestBody  UserDto userDTO) {
+    public ResponseEntity<?> createUser(@RequestBody UserDto userDTO) {
 
-        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(authServerUrl)
-                .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
-                .username("admin").password("963456")
+        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(authServerUrl).grantType(OAuth2Constants.PASSWORD)
+                .realm("master").clientId("admin-cli").username("admin").password("963456")
                 .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
 
         keycloak.tokenManager().getAccessToken();
-
 
         UserRepresentation user = new UserRepresentation();
         user.setEnabled(true);
@@ -86,7 +96,6 @@ public class UserController {
 
             log.info("Created userId {}", userId);
 
-
             // create password credential
             CredentialRepresentation passwordCred = new CredentialRepresentation();
             passwordCred.setTemporary(false);
@@ -108,48 +117,45 @@ public class UserController {
     }
 
     @PostMapping(path = "/signin")
-    public ResponseEntity<?> signin(@RequestBody  UserDto userDTO) {
+    public ResponseEntity<?> signin(@RequestBody UserDto userDTO) {
 
         Map<String, Object> clientCredentials = new HashMap<>();
         clientCredentials.put("secret", clientSecret);
         clientCredentials.put("grant_type", "password");
 
-        Configuration configuration =
-                new Configuration(authServerUrl, realm, clientId, clientCredentials, null);
+        Configuration configuration = new Configuration(authServerUrl, realm, clientId, clientCredentials, null);
         AuthzClient authzClient = AuthzClient.create(configuration);
 
-        AccessTokenResponse response =
-                authzClient.obtainAccessToken(userDTO.getEmail(), userDTO.getPassword());
+        AccessTokenResponse response = authzClient.obtainAccessToken(userDTO.getEmail(), userDTO.getPassword());
 
         return ResponseEntity.ok(response);
     }
 
     // @PostMapping(path = "/signout")
-    // public ResponseEntity<?> signout(HttpServletRequest request,@RequestBody  LogOutRequest logOutRequest) {
-    //     try {
-    //         String url = authServerUrl+"/realms/"+realm+"/protocol/openid-connect/logout";
+    // public ResponseEntity<?> signout(HttpServletRequest request,@RequestBody
+    // LogOutRequest logOutRequest) {
+    // try {
+    // String url =
+    // authServerUrl+"/realms/"+realm+"/protocol/openid-connect/logout";
 
-    //         HttpHeaders headers = new HttpHeaders();
-    //         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    //         headers.set("Authorization", request.getHeader("Authorization"));
-    //         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_FORM_URLENCODED));
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    // headers.set("Authorization", request.getHeader("Authorization"));
+    // headers.setAccept(Collections.singletonList(MediaType.APPLICATION_FORM_URLENCODED));
 
-    //         Map<String, Object> map = new HashMap<>();
-    //         map.put("client_id", clientId);
-    //         map.put("refresh_token", logOutRequest.getRefreshToken());
+    // Map<String, Object> map = new HashMap<>();
+    // map.put("client_id", clientId);
+    // map.put("refresh_token", logOutRequest.getRefreshToken());
 
-    //         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(map, headers);
-    //         this.restTemplate.postForObject(url, entity, LogOutRequest.class);
-            
+    // HttpEntity<Map<String, Object>> entity = new HttpEntity<>(map, headers);
+    // this.restTemplate.postForObject(url, entity, LogOutRequest.class);
 
-    //         return ResponseEntity.ok("Log out success");
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //         return (ResponseEntity<?>) ResponseEntity.badRequest();
-    //     }
+    // return ResponseEntity.ok("Log out success");
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // return (ResponseEntity<?>) ResponseEntity.badRequest();
     // }
-
-
+    // }
 
     @GetMapping(value = "/unprotected-data")
     public String getName() {
@@ -158,13 +164,34 @@ public class UserController {
 
     @PreAuthorize("hasRole('ROLE_pleb')")
     @GetMapping(value = "/for-Pleblv1")
-    public String getEmail() {
-        return "Hello, this api is for pleb lv1.";
+    public ResponseEntity<?> getEmail() {
+        try {
+            String url = "http://38b31f3d4565.ngrok.io/menu/getMenuById?menuId=1";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            // headers.setAccept(Collections.singletonList(MediaType.APPLICATION_FORM_URLENCODED));
+
+            // Map<String, Object> map = new HashMap<>();
+            // map.put("keySearch", "");
+            // map.put("limit", 100);
+            // map.put("pageNumber", 1);
+            // map.put("pageShow", 5);
+            // map.put("size", 2);
+            // map.put("sortType", "asc");
+            // map.put("sortValue", "orders");
+
+            // HttpEntity<Map<String, Object>> entity = new HttpEntity<>(map, headers);
+            MenuDto menuDto = this.restTemplate.getForObject(url, MenuDto.class);
+            return ResponseEntity.ok(menuDto);
+        } catch (Exception e) {
+            return (ResponseEntity<?>) ResponseEntity.badRequest();
+        }
     }
 
     @PreAuthorize("hasRole('ROLE_pleb1')")
     @GetMapping(value = "/for-Pleblv2")
-    public String getWelp() {
-        return "Hello, this api is for pleb lv2.";
+    public ResponseEntity<?> getWelp() {
+        return ResponseEntity.ok("Log out success");
     }
 }
