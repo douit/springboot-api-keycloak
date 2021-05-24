@@ -40,9 +40,8 @@
 -> Add selected to assign role
 
 # RUN SOURCE CODE
--> Make sure already setup Java jdk 8 above
-
->>>Located to source then type "mvnw spring-boot:run" in your terminal to run source
+-> Having docker installed
+-> RUN: docker compose up -d
 
 # REFERENCE
 https://www.tutorialsbuddy.com/keycloak-quickstart
