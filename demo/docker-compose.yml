@@ -4,6 +4,8 @@ services:
     mysql:
         restart: always
         image: mysql:8.0.20
+        volumes:
+            - ./mysql:/var/lib/mysql
         environment: 
             MYSQL_ROOT_PASSWORD: 12345
             MYSQL_USER: admin 
@@ -37,7 +39,7 @@ services:
             - 8081:8081
         environment: 
             WAIT_HOSTS: mysql:3306
-            WAIT_HOSTS: jboss/keycloak:13.0.0:8080
+            WAIT_HOSTS: quay.io/keycloak/keycloak:8080
         depends_on: 
             - mysql
             - keycloak
